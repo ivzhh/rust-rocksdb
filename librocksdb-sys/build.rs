@@ -136,7 +136,7 @@ fn build_rocksdb() {
         config.flag("-std=c++11");
         // this was breaking the build on travis due to
         // > 4mb of warnings emitted.
-        config.flag("-Wno-unused-parameter");
+        config.flag("-w");
     }
 
     for file in lib_sources {
@@ -161,6 +161,8 @@ fn build_snappy() {
         config.flag("-EHsc");
     } else {
         config.flag("-std=c++11");
+        config.flag("-Wmaybe-uninitialized");
+    config.flag("-w");
     }
 
     config.file("snappy/snappy.cc");
@@ -185,7 +187,10 @@ fn build_lz4() {
         "i686-pc-windows-gnu" => {
             compiler.flag("-fno-tree-vectorize");
         }
-        _ => {}
+        _ => {
+        compiler.flag("-Wmaybe-uninitialized");
+    compiler.flag("-w");
+        }
     }
 
     compiler.compile("liblz4.a");
@@ -215,6 +220,8 @@ fn build_zstd() {
 
     compiler.opt_level(3);
 
+    compiler.flag("-w");
+
     compiler.define("ZSTD_LIB_DEPRECATED", Some("0"));
     compiler.compile("libzstd.a");
 }
@@ -230,6 +237,8 @@ fn build_zlib() {
             compiler.file(path);
         }
     }
+
+    compiler.flag("-w");
 
     compiler.opt_level(3);
     compiler.compile("libz.a");
@@ -250,6 +259,7 @@ fn build_bzip2() {
     compiler
         .define("_FILE_OFFSET_BITS", Some("64"))
         .define("BZ_NO_STDIO", None);
+    compiler.flag("-w");
 
     compiler.opt_level(3);
     compiler.compile("libbz2.a");
